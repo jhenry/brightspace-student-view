@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers;
+use App\TokenStore\TokenCache;
+use App\TokenStore\TokenCacheCache;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+class AuthController extends Controller
+{
+  public function signin()
+  {
+    // Initialize the OAuth client
+    $oauthClient = $this->getOauthClient();
+
+    $authUrl = $oauthClient->getAuthorizationUrl();
+
+    // Save client state so we can validate in callback
+    session(['oauthState' => $oauthClient->getState()]);
+
+    // Redirect to AAD signin page
+    return redirect()->away($authUrl);
+  }
+  public function signout()
+  {
+    $tokenCache = new TokenCacheCache();
+    $tokenCache->clearTokens();
+    return redirect('/');
+  }
+
+  public function callback(Request $request)
+  {
+
+        $this->validateState($request);
+
+        // Authorization code should be in the "code" query param
+        $authCode = $request->query('code');
+        if (isset($authCode)) {
+            // Initialize the OAuth client
+            $oauthClient = $this->getOauthClient();
+
+            try {
+                // Make the token request
+                $accessToken = $oauthClient->getAccessToken('authorization_code', [
+                    'code' => $authCode
+                ]);
+
+                $userArray = whoAmI($oauthClient, $accessToken);
+
+                $tokenCache = new TokenCacheCache();
+                $tokenCache->storeTokens($accessToken, $userArray);
+
+                return redirect('/');
+            } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+                $errors = json_encode($e->getResponseBody());
+                Log::error('Error requesting access token: ' . $errors);
+
+                return redirect('/')
+                ->with('error', 'Error requesting access token')
+                ->with('errorDetail', $errors);
+            }
+        }
+
+        return redirect('/')
+        ->with('error', $request->query('error'))
+        ->with('errorDetail', $request->query('error_description'));
+  }
+
+  private function validateState($request) {
+    // Validate state
+    $expectedState = session('oauthState');
+    $request->session()->forget('oauthState');
+    $providedState = $request->query('state');
+
+    if (!isset($expectedState)) {
+      // If there is no expected state in the session,
+      // do nothing and redirect to the home page.
+      return redirect('/');
+    }
+
+    if (!isset($providedState) || $expectedState != $providedState) {
+      return redirect('/')
+        ->with('error', 'Invalid auth state')
+        ->with('errorDetail', 'The provided auth state did not match the expected value');
+    }
+
+  }
+}
+
