@@ -14,10 +14,20 @@
           @if(isset($error))
           <p class="alert-danger">{{ $error }}: {{ $errorDetail }}</p>
           @endif
-          @if(isset($whoami))
-          <p>Application executing as: {{ $whoami }}</p>
+          @if(isset($adminWhoami))
+          <p>Application executing as: {{ $adminWhoami }}</p>
           @else
-          <p>Not authenticated? Missing session?</p>
+          <p>Application Not authenticated?</p>
+          @endif
+          @if(isset($userName))
+          <p>Session user: {{ $userName }}</p>
+          @else
+          <p>User Not authenticated?</p>
+          @endif
+          @if(isset($userWhoami))
+          <p>Authed user is executing as: {{ $userWhoami }}</p>
+          @else
+          <p>Session/user mismatch?</p>
           @endif
           <form method="POST">
             <input type="hidden" name="orgUnitId" value="" id="orgUnitId">

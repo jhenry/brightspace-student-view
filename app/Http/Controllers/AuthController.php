@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\TokenStore\TokenCache;
+use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
 
 use App\Http\Controllers\Controller;
@@ -24,7 +24,7 @@ class AuthController extends Controller
   }
   public function signout()
   {
-    $tokenCache = new TokenCacheCache();
+    $tokenCache = new TokenSessionCache();
     $tokenCache->clearTokens();
     return redirect('/');
   }
@@ -46,9 +46,22 @@ class AuthController extends Controller
                     'code' => $authCode
                 ]);
 
-                $userArray = whoAmI($oauthClient, $accessToken);
+                $userArray = $this->whoAmI($oauthClient, $accessToken);
+                $userName = $userArray['UniqueName'];
+                $apiUserName = config('services.lms.api_service_user');
 
-                $tokenCache = new TokenCacheCache();
+                // If the authenticated user matches the api services account
+                // specified in application configs, then we want to use the
+                // Cache to store the tokens so that the application can make
+                // calls as needed for that user.
+                if( $userName == $apiUserName ) {
+                    $tokenCache = new TokenCacheCache();
+                }
+                else {
+                    // Otherwise, we'll use session storage
+                    $tokenCache = new TokenSessionCache();
+                }
+
                 $tokenCache->storeTokens($accessToken, $userArray);
 
                 return redirect('/');
