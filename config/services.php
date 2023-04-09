@@ -19,6 +19,8 @@ return [
         'api' => env('LMS_BASE_API'),
         'lp' => env('LMS_API_VERSION'),
         'scheme' => 'https',
+        'api_service_user' => env('LMS_API_SERVICE_USER'),
+        'end_user_roles' => env('LMS_END_USER_ROLES'),
     ],
 
     'mailgun' => [
