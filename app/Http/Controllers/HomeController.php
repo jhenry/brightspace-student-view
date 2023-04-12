@@ -15,8 +15,11 @@ class HomeController extends Controller
     $tokenCacheCache = new TokenCacheCache();
     $viewData['adminWhoami'] = $this->queryUser($tokenCacheCache);
 
-    $tokenSessionCache = new TokenSessionCache();
-    $viewData['userWhoami'] = $this->queryUser($tokenSessionCache);
+    // If we have a logged in session user, we can test a query as them
+    if(session('userName')) {
+        $tokenSessionCache = new TokenSessionCache();
+        $viewData['userWhoami'] = $this->queryUser($tokenSessionCache);
+    }
 
     return view('welcome', $viewData);
   }

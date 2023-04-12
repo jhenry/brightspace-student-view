@@ -12,23 +12,24 @@
         <div class="col mx-5">
           <h1>Add Student View Account</h1>
           @if(isset($error))
-          <p class="alert-danger">{{ $error }}: {{ $errorDetail }}</p>
+            <p class="alert-danger">{{ $error }}: {{ $errorDetail }}</p>
           @endif
           @if(isset($adminWhoami))
-          <p>Application executing as: {{ $adminWhoami }}</p>
+            <p>Application executing as: {{ $adminWhoami }}</p>
           @else
-          <p>Application Not authenticated?</p>
+            <p>Application Not authenticated?</p>
           @endif
           @if(isset($userName))
-          <p>Session user: {{ $userName }}</p>
+            <p>Session user: {{ $userName }}</p>
+                @if(isset($userWhoami))
+                    <p>Authed user is executing as: {{ $userWhoami }}</p>
+                @else
+                    <p>Session/user mismatch?</p>
+                @endif
           @else
-          <p>User Not authenticated?</p>
+            <p>User Not authenticated?</p>
           @endif
-          @if(isset($userWhoami))
-          <p>Authed user is executing as: {{ $userWhoami }}</p>
-          @else
-          <p>Session/user mismatch?</p>
-          @endif
+
           <form method="POST">
             <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
             <p>Add a student view account to this course.</p>
