@@ -5,9 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
+use App\Services\BrightspaceService;
 
 class HomeController extends Controller
 {
+    private $brightspace;
+
+    public function __construct(BrightspaceService $brightspaceService)
+    {
+        $this->brightspace = $brightspaceService;
+    }
+
   public function welcome()
   {
     $viewData = $this->loadViewData();
@@ -28,8 +36,8 @@ class HomeController extends Controller
   {
     $accessToken = $tokenCache->getAccessToken();
     // Initialize the OAuth client
-    $oauthClient = $this->getOauthClient();
-    $userArray = $this->whoAmI($oauthClient, $accessToken);
+    $oauthClient = $this->brightspace->getOauthClient();
+    $userArray = $this->brightspace->whoAmI($oauthClient, $accessToken);
     return $userArray["UniqueName"];
   }
 }
