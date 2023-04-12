@@ -3,16 +3,23 @@
 namespace App\Http\Controllers;
 use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
+use App\Services\BrightspaceService;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    private $brightspace;
+
+    public function __construct(BrightspaceService $brightspaceService)
+    {
+        $this->brightspace = $brightspaceService;
+    }
   public function signin()
   {
     // Initialize the OAuth client
-    $oauthClient = $this->getOauthClient();
+    $oauthClient = $this->brightspace->getOauthClient();
 
     $authUrl = $oauthClient->getAuthorizationUrl();
 
@@ -38,7 +45,7 @@ class AuthController extends Controller
         $authCode = $request->query('code');
         if (isset($authCode)) {
             // Initialize the OAuth client
-            $oauthClient = $this->getOauthClient();
+            $oauthClient = $this->brightspace->getOauthClient();
 
             try {
                 // Make the token request
@@ -46,7 +53,7 @@ class AuthController extends Controller
                     'code' => $authCode
                 ]);
 
-                $userArray = $this->whoAmI($oauthClient, $accessToken);
+                $userArray = $this->brightspace->whoAmI($oauthClient, $accessToken);
                 $userName = $userArray['UniqueName'];
                 $apiUserName = config('services.lms.api_service_user');
 
