@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
 use App\Services\BrightspaceService;
@@ -16,28 +17,28 @@ class AuthController extends Controller
     {
         $this->brightspace = $brightspaceService;
     }
-  public function signin()
-  {
-    // Initialize the OAuth client
-    $oauthClient = $this->brightspace->getOauthClient();
+    public function signin()
+    {
+        // Initialize the OAuth client
+        $oauthClient = $this->brightspace->getOauthClient();
 
-    $authUrl = $oauthClient->getAuthorizationUrl();
+        $authUrl = $oauthClient->getAuthorizationUrl();
 
-    // Save client state so we can validate in callback
-    session(['oauthState' => $oauthClient->getState()]);
+        // Save client state so we can validate in callback
+        session(['oauthState' => $oauthClient->getState()]);
 
-    // Redirect to AAD signin page
-    return redirect()->away($authUrl);
-  }
-  public function signout()
-  {
-    $tokenCache = new TokenSessionCache();
-    $tokenCache->clearTokens();
-    return redirect('/');
-  }
+        // Redirect to AAD signin page
+        return redirect()->away($authUrl);
+    }
+    public function signout()
+    {
+        $tokenCache = new TokenSessionCache();
+        $tokenCache->clearTokens();
+        return redirect('/');
+    }
 
-  public function callback(Request $request)
-  {
+    public function callback(Request $request)
+    {
 
         $this->validateState($request);
 
@@ -53,7 +54,7 @@ class AuthController extends Controller
                     'code' => $authCode
                 ]);
 
-                $userArray = $this->brightspace->whoAmI($oauthClient, $accessToken);
+                $userArray = $this->brightspace->whoAmI($accessToken);
                 $userName = $userArray['UniqueName'];
                 $apiUserName = config('services.lms.api_service_user');
 
@@ -61,10 +62,9 @@ class AuthController extends Controller
                 // specified in application configs, then we want to use the
                 // Cache to store the tokens so that the application can make
                 // calls as needed for that user.
-                if( $userName == $apiUserName ) {
+                if ($userName == $apiUserName) {
                     $tokenCache = new TokenCacheCache();
-                }
-                else {
+                } else {
                     // Otherwise, we'll use session storage
                     $tokenCache = new TokenSessionCache();
                 }
@@ -77,34 +77,33 @@ class AuthController extends Controller
                 Log::error('Error requesting access token: ' . $errors);
 
                 return redirect('/')
-                ->with('error', 'Error requesting access token')
-                ->with('errorDetail', $errors);
+                    ->with('error', 'Error requesting access token')
+                    ->with('errorDetail', $errors);
             }
         }
 
         return redirect('/')
-        ->with('error', $request->query('error'))
-        ->with('errorDetail', $request->query('error_description'));
-  }
-
-  private function validateState($request) {
-    // Validate state
-    $expectedState = session('oauthState');
-    $request->session()->forget('oauthState');
-    $providedState = $request->query('state');
-
-    if (!isset($expectedState)) {
-      // If there is no expected state in the session,
-      // do nothing and redirect to the home page.
-      return redirect('/');
+            ->with('error', $request->query('error'))
+            ->with('errorDetail', $request->query('error_description'));
     }
 
-    if (!isset($providedState) || $expectedState != $providedState) {
-      return redirect('/')
-        ->with('error', 'Invalid auth state')
-        ->with('errorDetail', 'The provided auth state did not match the expected value');
-    }
+    private function validateState($request)
+    {
+        // Validate state
+        $expectedState = session('oauthState');
+        $request->session()->forget('oauthState');
+        $providedState = $request->query('state');
 
-  }
+        if (!isset($expectedState)) {
+            // If there is no expected state in the session,
+            // do nothing and redirect to the home page.
+            return redirect('/');
+        }
+
+        if (!isset($providedState) || $expectedState != $providedState) {
+            return redirect('/')
+                ->with('error', 'Invalid auth state')
+                ->with('errorDetail', 'The provided auth state did not match the expected value');
+        }
+    }
 }
-
