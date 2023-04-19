@@ -17,7 +17,7 @@ class AuthController extends Controller
     {
         $this->brightspace = $brightspaceService;
     }
-    public function signin()
+    public function signin(Request $request)
     {
         // Initialize the OAuth client
         $oauthClient = $this->brightspace->getOauthClient();
@@ -26,6 +26,10 @@ class AuthController extends Controller
 
         // Save client state so we can validate in callback
         session(['oauthState' => $oauthClient->getState()]);
+
+        if( !empty($request->ou) ) {
+            session(['orgUnitId' => $request->ou]);
+        }
 
         // Redirect to AAD signin page
         return redirect()->away($authUrl);

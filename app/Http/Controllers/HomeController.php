@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
 use App\Services\BrightspaceService;
+use App\Services\StudentViewService;
 
 class HomeController extends Controller
 {
@@ -28,6 +29,14 @@ class HomeController extends Controller
             $tokenSessionCache = new TokenSessionCache();
             $viewData['userWhoami'] = $this->queryUser($tokenSessionCache);
         }
+
+
+        $accessToken = $tokenCacheCache->getAccessToken();
+        $studentView = new StudentViewService($this->brightspace, $accessToken);
+        //$studentView->createUser();
+        //$studentView->createEnrollment();
+        //$studentView->deleteEnrollment();
+
 
         return view('welcome', $viewData);
     }

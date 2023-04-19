@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Illuminate\Support\Facades\Log;
 
 class BrightspaceService
 {
@@ -31,12 +32,14 @@ class BrightspaceService
         return $oauthClient;
     }
 
-    public function buildRequest($requestPath, $accessToken,  $method = 'GET')
+    public function buildRequest($requestPath, $accessToken, $method = 'GET', $options)
     {
+        $path = $this->basePath . $requestPath;
         $request = $this->oauthClient->getAuthenticatedRequest(
             $method,
-            $this->basePath . $requestPath,
-            $accessToken
+            $path,
+            $accessToken,
+            $options
         );
 
         return $request;
@@ -44,14 +47,17 @@ class BrightspaceService
     public function sendRequest($request)
     {
         $httpClient = new \GuzzleHttp\Client();
-        $response = $httpClient->send($request);
-
+        $response = $httpClient->send($request, ['http_errors' => false]);
         return $response;
     }
 
-    public function doRequest($path, $accessToken, $method='GET')
+    public function doRequest($path, $accessToken, $method='GET', $body = NULL)
     {
-        $request = $this->buildRequest($path, $accessToken, $method);
+        $options = array();
+        if (!empty($body)) {
+            $options['body'] = json_encode($body);
+        }
+        $request = $this->buildRequest($path, $accessToken, $method, $options);
         $response = $this->sendRequest($request);
         return $response;
     }
