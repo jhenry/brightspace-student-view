@@ -6,12 +6,11 @@ use Illuminate\Support\Facades\Log;
 
 class StudentViewService
 {
-    public $accountPostfix = '_sv_';
-    public $namePostfix = '_sv';
+    public $accountPostfix = '_sv';
     public $studentViewRoleId = 126;
 
     public $parentUserId;
-    public $orgUnitID;
+    public $orgUnitId;
     public $studentViewUser;
 
     private $accessCode;
@@ -24,8 +23,12 @@ class StudentViewService
 
         $this->parentUserId = session('userIdentifier');
         $this->orgUnitId = session('orgUnitId');
+        $this->accountPostfix = $this->accountPostfix . $this->orgUnitId;
 
         //check for existing and set member data
+        $userName = session('userName') . $this->accountPostfix;
+        $userResponse = $this->getUserByName($userName);
+        $this->studentViewUser = ($userResponse) ? $userResponse : array();
     }
 
     /**
@@ -161,7 +164,7 @@ class StudentViewService
     {
         $user = $this->getUser($this->parentUserId);
         if ( $user ) {
-            $postFix = "_sv" . $this->orgUnitId;
+            $postFix = $this->accountPostfix;
             $email = $user["UserName"] . "+brightspace" . $postFix . "@uvm.edu";
             $createUserData = array(
                 "OrgDefinedId" => "",

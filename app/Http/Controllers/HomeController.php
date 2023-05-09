@@ -22,23 +22,42 @@ class HomeController extends Controller
         $viewData = $this->loadViewData();
 
         $tokenCacheCache = new TokenCacheCache();
-        $viewData['adminWhoami'] = $this->queryUser($tokenCacheCache);
-
-        // If we have a logged in session user, we can test a query as them
-        if (session('userName')) {
-            $tokenSessionCache = new TokenSessionCache();
-            $viewData['userWhoami'] = $this->queryUser($tokenSessionCache);
-        }
-
 
         $accessToken = $tokenCacheCache->getAccessToken();
         $studentView = new StudentViewService($this->brightspace, $accessToken);
-        //$studentView->createUser();
-        //$studentView->createEnrollment();
-        //$studentView->deleteEnrollment();
+        $viewData["svExists"] = (!empty($studentView->studentViewUser)) ? true : false;
 
+        $viewData["orgUnitId"] = $studentView->orgUnitId;
+        $viewData["lmsBaseUrl"] = $studentView->orgUnitId;
+        $viewData["classlistUrl"] = config('services.lms.base') . '/d2l/lms/classlist/classlist.d2l?ou=' . $studentView->orgUnitId;
 
         return view('welcome', $viewData);
+    }
+
+    public function addStudentView()
+    {
+        $tokenCacheCache = new TokenCacheCache();
+        $accessToken = $tokenCacheCache->getAccessToken();
+        $studentView = new StudentViewService($this->brightspace, $accessToken);
+        if( $_POST['action-add'] == 'add' ) {
+            $studentView->createUser();
+            $studentView->createEnrollment();
+        }
+
+        return redirect('/');
+    }
+
+    public function removeStudentView()
+    {
+        $tokenCacheCache = new TokenCacheCache();
+        $accessToken = $tokenCacheCache->getAccessToken();
+        $studentView = new StudentViewService($this->brightspace, $accessToken);
+        if( $_POST['action-remove'] == 'remove' ) {
+            $studentView->deleteEnrollment();
+            $studentView->deleteUser();
+        }
+
+        return redirect('/');
     }
 
     public function queryUser($tokenCache)

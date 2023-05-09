@@ -18,3 +18,6 @@ Route::get('/', 'App\Http\Controllers\HomeController@welcome');
 Route::get('/signin', 'App\Http\Controllers\AuthController@signin');
 Route::get('/callback', 'App\Http\Controllers\AuthController@callback');
 Route::get('/signout', 'App\Http\Controllers\AuthController@signout');
+
+Route::post('/add', 'App\Http\Controllers\HomeController@addStudentView');
+Route::post('/remove', 'App\Http\Controllers\HomeController@removeStudentView');
