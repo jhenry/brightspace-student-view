@@ -52,6 +52,10 @@ class StudentViewService
                     $body = (string) $response->getBody();
                     $this->studentViewUser = json_decode($body, true);
                 }
+                else 
+                {
+                  Log::warning('User creation failed with status code ' . $status);
+                }
             }
             else{
                 $this->studentViewUser = $userResponse;
