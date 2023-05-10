@@ -18,14 +18,14 @@
                 @endif
 
                 @if(!$svExists)
-                <form action="/add" method="POST">
+                <form action="{{ url('/add') }}" method="POST">
                     <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
                     <p>Add a student view account to this course.</p>
                     <button type="submit" name="action-add" value="add" class="btn btn-primary">Add Student View Account</button>
                     {{ csrf_field() }}
                 </form>
                 @else
-                <form action="/remove" method="POST">
+                <form action="{{ url('/remove') }}" method="POST">
                     <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
                     <p>A student view account exists for this course. You can enter student view by going to the classlist and impersonating the user.</p>
                     <a target="_parent" class="btn btn-primary" href="{{ $classlistUrl }}">Go To Classlist</a>
