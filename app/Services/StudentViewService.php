@@ -173,7 +173,7 @@ class StudentViewService
             $createUserData = array(
                 "OrgDefinedId" => "",
                 "FirstName" => $user["FirstName"] . $postFix,
-                "MiddleName" => "test",
+                "MiddleName" => "",
                 "LastName" => $user["LastName"] . $postFix,
                 "ExternalEmail" => $email,
                 "UserName" => $user["UserName"] . $postFix,
