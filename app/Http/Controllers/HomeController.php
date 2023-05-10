@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
 use App\Services\BrightspaceService;
+use App\Services\StudentViewService;
 
 class HomeController extends Controller
 {
@@ -16,28 +17,54 @@ class HomeController extends Controller
         $this->brightspace = $brightspaceService;
     }
 
-  public function welcome()
-  {
-    $viewData = $this->loadViewData();
+    public function welcome()
+    {
+        $viewData = $this->loadViewData();
 
-    $tokenCacheCache = new TokenCacheCache();
-    $viewData['adminWhoami'] = $this->queryUser($tokenCacheCache);
+        $tokenCacheCache = new TokenCacheCache();
 
-    // If we have a logged in session user, we can test a query as them
-    if(session('userName')) {
-        $tokenSessionCache = new TokenSessionCache();
-        $viewData['userWhoami'] = $this->queryUser($tokenSessionCache);
+        $accessToken = $tokenCacheCache->getAccessToken();
+        $studentView = new StudentViewService($this->brightspace, $accessToken);
+        $viewData["svExists"] = (!empty($studentView->studentViewUser)) ? true : false;
+
+        $viewData["orgUnitId"] = $studentView->orgUnitId;
+        $viewData["lmsBaseUrl"] = $studentView->orgUnitId;
+        $viewData["classlistUrl"] = config('services.lms.base') . '/d2l/lms/classlist/classlist.d2l?ou=' . $studentView->orgUnitId;
+
+        return view('welcome', $viewData);
     }
 
-    return view('welcome', $viewData);
-  }
+    public function addStudentView()
+    {
+        $tokenCacheCache = new TokenCacheCache();
+        $accessToken = $tokenCacheCache->getAccessToken();
+        $studentView = new StudentViewService($this->brightspace, $accessToken);
+        if( $_POST['action-add'] == 'add' ) {
+            $studentView->createUser();
+            $studentView->createEnrollment();
+        }
 
-  public function queryUser($tokenCache)
-  {
-    $accessToken = $tokenCache->getAccessToken();
-    // Initialize the OAuth client
-    $oauthClient = $this->brightspace->getOauthClient();
-    $userArray = $this->brightspace->whoAmI($oauthClient, $accessToken);
-    return $userArray["UniqueName"];
-  }
+        return redirect('/');
+    }
+
+    public function removeStudentView()
+    {
+        $tokenCacheCache = new TokenCacheCache();
+        $accessToken = $tokenCacheCache->getAccessToken();
+        $studentView = new StudentViewService($this->brightspace, $accessToken);
+        if( $_POST['action-remove'] == 'remove' ) {
+            $studentView->deleteEnrollment();
+            $studentView->deleteUser();
+        }
+
+        return redirect('/');
+    }
+
+    public function queryUser($tokenCache)
+    {
+        $accessToken = $tokenCache->getAccessToken();
+        // Initialize the OAuth client
+        $userArray = $this->brightspace->whoAmI($accessToken);
+        return $userArray["UniqueName"];
+    }
 }
