@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 class StudentViewService
 {
     public $accountPostfix = '_sv';
-    public $studentViewRoleId = 126;
+    public $studentViewRoleId;
 
     public $parentUserId;
     public $orgUnitId;
@@ -20,7 +20,7 @@ class StudentViewService
     {
         $this->brightspace = $brightspaceService;
         $this->accessCode = $accessTokens;
-
+        $this->studentViewRoleId = config('services.lms.sva_role_id');
         $this->parentUserId = session('userIdentifier');
         $this->orgUnitId = session('orgUnitId');
         $this->accountPostfix = $this->accountPostfix . $this->orgUnitId;

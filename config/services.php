@@ -21,6 +21,7 @@ return [
         'scheme' => 'https',
         'api_service_user' => env('LMS_API_SERVICE_USER'),
         'end_user_roles' => env('LMS_END_USER_ROLES'),
+        'sva_role_id' => env('LMS_SVA_ROLE_ID')
     ],
 
     'mailgun' => [
