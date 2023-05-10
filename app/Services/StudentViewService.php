@@ -173,7 +173,7 @@ class StudentViewService
                 "LastName" => $user["LastName"] . $postFix,
                 "ExternalEmail" => $email,
                 "UserName" => $user["UserName"] . $postFix,
-                "RoleId" => 126,
+                "RoleId" => $this->studentViewRoleId,
                 "IsActive" => "True",
                 "SendCreationEmail" => "False"
             );
