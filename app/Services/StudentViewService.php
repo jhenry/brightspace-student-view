@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Session;
 use App\Services\BrightspaceService;
 use App\TokenStore\TokenSessionCache;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,7 @@ class StudentViewService
     public $parentUserId;
     public $orgUnitId;
     public $studentViewUser;
+    public $studentViewEnrollment;
 
     private $accessCode;
     private $brightspace;
@@ -42,7 +44,7 @@ class StudentViewService
     public function createUser()
     {
         $newUser = $this->buildUserData();
-
+        $userExists = false;
         if ( $newUser ) {
             $userResponse = $this->getUserByName($newUser['UserName']);
             // Check for existence of the user we're about to create
@@ -54,6 +56,7 @@ class StudentViewService
                 {
                     $body = (string) $response->getBody();
                     $this->studentViewUser = json_decode($body, true);
+                    $userExists = true;
                 }
                 else
                 {
@@ -61,8 +64,14 @@ class StudentViewService
                 }
             }
             else{
+                // User already exists
                 $this->studentViewUser = $userResponse;
+                $userExists = true;
             }
+        }
+        if ($userExists){
+            Session::flash('alert', "Successfully created a student view account with the username " . $this->studentViewUser['UserName'] . ".");
+            Session::flash('alert-class', 'alert-success');
         }
     }
 
@@ -74,17 +83,16 @@ class StudentViewService
     public function createEnrollment()
     {
         $enrollmentData = $this->buildEnrollmentData();
-        if( $enrollmentData )
-        {
+        if ($enrollmentData) {
             $response = $this->brightspace->doRequest('/enrollments/', $this->accessCode, 'POST', $enrollmentData);
-                $status = $response->getStatusCode();
-                if($status == '200')
-                {
-                    $body = (string) $response->getBody();
-                    $this->studentViewEnrollment = json_decode($body, true);
-                }
+            $status = $response->getStatusCode();
+            if ($status == '200') {
+                $body = (string) $response->getBody();
+                $this->studentViewEnrollment = json_decode($body, true);
+                Session::flash('alert', session('alert') . " This account has been enrolled in the course. ");
+                Session::flash('alert-class', 'alert-success');
+            }
         }
-
     }
 
     /**
@@ -98,6 +106,8 @@ class StudentViewService
         $status = $response->getStatusCode();
         if ($status == '200') {
             $this->studentViewEnrollment = array();
+            Session::flash('alert', "The Student View Account has been unenrolled ");
+            Session::flash('alert-class', 'alert-success');
         }
     }
 
@@ -112,6 +122,8 @@ class StudentViewService
         $status = $response->getStatusCode();
         if ($status == '200') {
             $this->studentViewUser = array();
+            Session::flash('alert', session('alert') . " and deleted.");
+            Session::flash('alert-class', 'alert-success');
         }
     }
 

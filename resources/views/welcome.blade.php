@@ -11,10 +11,10 @@
 <body>
     <div class="container">
         <div class="row pt-4 mx-1">
-            <div class="col mx-5">
+            <div class="col-8 mx-5">
                 <h1>Student View Account</h1>
-                @if(isset($error))
-                <p class="alert-danger">{{ $error }}: {{ $errorDetail }}</p>
+                @if(Session::has('alert'))
+                <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{ Session::get('alert') }}</p>
                 @endif
 
                 @if($isAllowed)
@@ -28,9 +28,8 @@
                     @else
                     <form action="{{ url('/remove') }}" method="POST">
                         <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
-                        <p>A student view account exists for this course. You can enter student view by going to the classlist and impersonating the user.</p>
-                        <a target="_parent" class="btn btn-primary" href="{{ $classlistUrl }}">Go To Classlist</a>
-                        <button type="submit" name="action-remove" value="remove" class="btn btn-primary">Remove Student View Account</button>
+                        <p>A student view account exists for this course. You can enter student view by <a target="_parent" href="{{ $classlistUrl }}">going to the classlist</a> and impersonating the user.</p>
+                        <button type="submit" name="action-remove" value="remove" class="btn btn-primary">Delete Student View Account</button>
                         {{ csrf_field() }}
                     </form>
                     @endif
