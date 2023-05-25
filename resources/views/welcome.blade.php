@@ -17,21 +17,25 @@
                 <p class="alert-danger">{{ $error }}: {{ $errorDetail }}</p>
                 @endif
 
-                @if(!$svExists)
-                <form action="{{ url('/add') }}" method="POST">
-                    <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
-                    <p>Add a student view account to this course.</p>
-                    <button type="submit" name="action-add" value="add" class="btn btn-primary">Add Student View Account</button>
-                    {{ csrf_field() }}
-                </form>
+                @if($isAllowed)
+                    @if(!$svExists)
+                    <form action="{{ url('/add') }}" method="POST">
+                        <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
+                        <p>Add a student view account to this course.</p>
+                        <button type="submit" name="action-add" value="add" class="btn btn-primary">Add Student View Account</button>
+                        {{ csrf_field() }}
+                    </form>
+                    @else
+                    <form action="{{ url('/remove') }}" method="POST">
+                        <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
+                        <p>A student view account exists for this course. You can enter student view by going to the classlist and impersonating the user.</p>
+                        <a target="_parent" class="btn btn-primary" href="{{ $classlistUrl }}">Go To Classlist</a>
+                        <button type="submit" name="action-remove" value="remove" class="btn btn-primary">Remove Student View Account</button>
+                        {{ csrf_field() }}
+                    </form>
+                    @endif
                 @else
-                <form action="{{ url('/remove') }}" method="POST">
-                    <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
-                    <p>A student view account exists for this course. You can enter student view by going to the classlist and impersonating the user.</p>
-                    <a target="_parent" class="btn btn-primary" href="{{ $classlistUrl }}">Go To Classlist</a>
-                    <button type="submit" name="action-remove" value="remove" class="btn btn-primary">Remove Student View Account</button>
-                    {{ csrf_field() }}
-                </form>
+                <p class="alert alert-danger">You are not authorized to use this tool.</p>
                 @endif
             </div>
         </div>

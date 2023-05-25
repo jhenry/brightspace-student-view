@@ -2,12 +2,14 @@
 
 namespace App\Services;
 use App\Services\BrightspaceService;
+use App\TokenStore\TokenSessionCache;
 use Illuminate\Support\Facades\Log;
 
 class StudentViewService
 {
     public $accountPostfix = '_sv';
     public $studentViewRoleId;
+    public $allowedRoles;
 
     public $parentUserId;
     public $orgUnitId;
@@ -21,6 +23,7 @@ class StudentViewService
         $this->brightspace = $brightspaceService;
         $this->accessCode = $accessTokens;
         $this->studentViewRoleId = config('services.lms.sva_role_id');
+        $this->allowedRoles = explode(",", config('services.lms.end_user_roles'));
         $this->parentUserId = session('userIdentifier');
         $this->orgUnitId = session('orgUnitId');
         $this->accountPostfix = $this->accountPostfix . $this->orgUnitId;
@@ -52,7 +55,7 @@ class StudentViewService
                     $body = (string) $response->getBody();
                     $this->studentViewUser = json_decode($body, true);
                 }
-                else 
+                else
                 {
                   Log::warning('User creation failed with status code ' . $status);
                 }
@@ -207,4 +210,33 @@ class StudentViewService
             return false;
         }
   }
+
+    /**
+     * Confirm if the end user/session user has access to the tool
+     * by pulling Enrollment.MyOrgUnitAccessInfo block using their own session
+     *
+     */
+    public function isAllowed()
+    {
+        $tokenSessionCache = new TokenSessionCache();
+        $accessToken = $tokenSessionCache->getAccessToken();
+
+        $allowed = false;
+
+        $request = '/enrollments/myenrollments/' . $this->orgUnitId;
+        $response = $this->brightspace->doRequest($request, $accessToken);
+        $status = $response->getStatusCode();
+        if ($status == '200') {
+            $body = (string) $response->getBody();
+            $enrollment = json_decode($body, true);
+            $canAccess = $enrollment['Access']['CanAccess'];
+            $role = $enrollment['Access']['ClasslistRoleName'];
+            if ($canAccess) {
+                $allowed = (in_array($role, $this->allowedRoles)) ? true : false;
+            }
+        }
+
+        return $allowed;
+    }
+
 }

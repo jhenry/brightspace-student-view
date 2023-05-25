@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
 use App\Services\BrightspaceService;
 use App\Services\StudentViewService;
@@ -30,6 +29,8 @@ class HomeController extends Controller
         $viewData["orgUnitId"] = $studentView->orgUnitId;
         $viewData["lmsBaseUrl"] = $studentView->orgUnitId;
         $viewData["classlistUrl"] = config('services.lms.base') . '/d2l/lms/classlist/classlist.d2l?ou=' . $studentView->orgUnitId;
+
+        $viewData["isAllowed"] = $studentView->isAllowed();
 
         return view('welcome', $viewData);
     }
