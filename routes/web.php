@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 
 //Route::get('/', function () { return view('welcome'); });
 Route::get('/', 'App\Http\Controllers\HomeController@welcome');
+Route::get('/popout', function (Request $request) {
+    $ou = $request->ou;
+    return view('popout', ['launchUrl' => url("/signin?ou=$ou")]);
+});
 Route::get('/signin', 'App\Http\Controllers\AuthController@signin');
 Route::get('/callback', 'App\Http\Controllers\AuthController@callback');
 Route::get('/signout', 'App\Http\Controllers\AuthController@signout');

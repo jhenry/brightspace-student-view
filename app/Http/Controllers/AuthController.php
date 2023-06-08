@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\TokenStore\TokenSessionCache;
 use App\TokenStore\TokenCacheCache;
 use App\Services\BrightspaceService;
+use Browser;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -19,6 +20,13 @@ class AuthController extends Controller
     }
     public function signin(Request $request)
     {
+        // Client check to allow re-launching in new window in Safari
+        if(Browser::isSafari()) {
+            if(empty($request->popout)) {
+                return redirect('/popout?ou=' . $request->ou);
+            }
+        }
+
         // Initialize the OAuth client
         $oauthClient = $this->brightspace->getOauthClient();
 
