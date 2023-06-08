@@ -24,7 +24,11 @@ class HomeController extends Controller
 
         $accessToken = $tokenCacheCache->getAccessToken();
         $studentView = new StudentViewService($this->brightspace, $accessToken);
-        $viewData["svExists"] = (!empty($studentView->studentViewUser)) ? true : false;
+        $viewData["svExists"] = false;
+        if(!empty($studentView->studentViewUser)) {
+            $viewData["svExists"] = true;
+            $viewData["svUserName"] = $studentView->studentViewUser;
+        }
 
         $viewData["orgUnitId"] = $studentView->orgUnitId;
         $viewData["lmsBaseUrl"] = $studentView->orgUnitId;

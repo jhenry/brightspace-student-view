@@ -28,8 +28,9 @@
                     @else
                     <form action="{{ url('/remove') }}" method="POST">
                         <input type="hidden" name="orgUnitId" value="" id="orgUnitId">
-                        <p>A student view account exists for this course. You can enter student view by <a target="_parent" href="{{ $classlistUrl }}">going to the classlist</a> and impersonating the user.</p>
-                        <button type="submit" name="action-remove" value="remove" class="btn btn-primary">Delete Student View Account</button>
+                        <p>You have a student view account in this course. You can view the course as this student by <a target="_parent" href="{{ $classlistUrl }}">going to the classlist</a> and selecting "Impersonate" from the dropdown next to your student view account (it will be listed there with the username <span class="fw-semibold">{{ $svUserName["UserName"] }}</span>).</p>
+                        <a href="{{ $classlistUrl }}" class="btn btn-primary">Go to Classlist</a>
+                        <button type="submit" name="action-remove" value="remove" class="btn btn-outline-danger">Delete Student View Account</button>
                         {{ csrf_field() }}
                     </form>
                     @endif
