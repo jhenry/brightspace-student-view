@@ -20,8 +20,9 @@ class AuthController extends Controller
     }
     public function signin(Request $request)
     {
-        // Client check to allow re-launching in new window in Safari
-        if(Browser::isSafari()) {
+        // Client check to allow re-launching in new window in Safari/FF
+	// This gets around lack of same-site=lax defaults in those browsers
+        if(Browser::isSafari() || Browser::isFirefox()) {
             if(empty($request->popout)) {
                 return redirect('/popout?ou=' . $request->ou);
             }
