@@ -32,7 +32,7 @@ class BrightspaceService
         return $oauthClient;
     }
 
-    public function buildRequest($requestPath, $accessToken, $method = 'GET', $options)
+    public function buildRequest($requestPath, $accessToken, $method = 'GET', array $options = [])
     {
         $path = $this->basePath . $requestPath;
         $request = $this->oauthClient->getAuthenticatedRequest(
