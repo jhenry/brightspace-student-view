@@ -23,7 +23,7 @@ Deploying this tool looks something like this:
 
 You will need to create a specific LMS user account, along with an associated role with permissions tailored to the needs of the application.  
 
-Never, (ever!) use an administrator account for this service in production. Permissions should be scoped only to include what is necessary for execution of it specific tasks such as user creation, enrollment, etc.
+**Note**: Never, (ever!) use an administrator account for this service in production. Permissions for the services account should be scoped to *only include what is necessary for execution* of the specific tasks involved— such as user creation, enrollment, etc.
 
 ### Create a Student View Role
 
