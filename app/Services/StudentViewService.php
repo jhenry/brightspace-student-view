@@ -1,25 +1,99 @@
 <?php
 
+/**
+ * Student View: StudentView api/service class
+ * @package StudentViewService
+ * @author Justin Henry <justin.henry@uvm.edu>
+ *
+ */
 namespace App\Services;
 use Session;
 use App\Services\BrightspaceService;
 use App\TokenStore\TokenSessionCache;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Self-service student view account management for Brightspace.
+ *
+ * Account provisioning and enrollment of demo/dummy student accounts in
+ * Brightspace courses via the Valence API's.  Methods for building payloads,
+ * deletion of accounts, access control, and other ancillary tasks are also
+ * included.
+ *
+ * @var string $accountPostfix Label/pattern for provisioned accounts.
+ * @todo move $accountPostfix to .env
+ */
 class StudentViewService
 {
+    /**
+     * Label/pattern fragment for provisioned account usernames.
+     *
+     * @var string
+     */
     public $accountPostfix = '_sv';
+
+    /**
+     * D2LID for the role that is assigned to the provisioned accounts.
+     *
+     * @var int
+     */
     public $studentViewRoleId;
+
+    /**
+     * List of allowed roles that can provision these accounts.
+     *
+     * @var array
+     */
     public $allowedRoles;
 
+    /**
+     * D2LID of the user who is initiating the account provisioning request.
+     *
+     * @var int
+     */
     public $parentUserId;
+
+    /**
+     * D2LID of the course the account is being enrolled into.
+     *
+     * @var int
+     */
     public $orgUnitId;
+
+    /**
+     * Array containing user payload data for the provisioned account.
+     *
+     * @var mixed
+     */
     public $studentViewUser;
+
+    /**
+     * Array containing enrollment payload for the provisioned account.
+     *
+     * @var mixed
+     */
     public $studentViewEnrollment;
 
+    /**
+     * OAuth tokens for making authenticated calls to the API service.
+     *
+     * @var mixed
+     */
     private $accessCode;
+
+    /**
+     * Instance of the service class handling low-level api requests.
+     *
+     * @var BrightspaceService
+     */
     private $brightspace;
 
+    /**
+     * Initialize properties and check for pre-existing accounts.
+     *
+     * @param BrightspaceService $brightspaceService API service class.
+     * @param mixed $accessTokens OAuth tokens used when sending requests.
+     */
     public function __construct(BrightspaceService $brightspaceService, $accessTokens)
     {
         $this->brightspace = $brightspaceService;
@@ -37,8 +111,9 @@ class StudentViewService
     }
 
     /**
-     * Make a demo student account for a specific user/course combination
-     * https://docs.valence.desire2learn.com/res/user.html#post--d2l-api-lp-(version)-users-
+     *  Make a demo student account for a specific user/course combination.
+     *  Check for duplicates, initialize user payload, and send the account
+     *  provisioning call.
      *
      */
     public function createUser()
@@ -77,7 +152,7 @@ class StudentViewService
 
 
     /**
-     * Create a new enrollment
+     * Create a new enrollment payload and send the request.
      *
      */
     public function createEnrollment()
@@ -96,7 +171,7 @@ class StudentViewService
     }
 
     /**
-     * Remove the student view user enrollment
+     * Remove the student view user enrollment.
      *
      */
     public function deleteEnrollment()
@@ -112,7 +187,7 @@ class StudentViewService
     }
 
     /**
-     * Remove the student view user
+     * Delete the provisioned student view account for this course/requestor.
      *
      */
     public function deleteUser()
@@ -127,10 +202,12 @@ class StudentViewService
         }
     }
 
-
     /**
-     * Retrieve a user record using a D2LID
+     * Retrieve a user record using a D2LID. Returns false if not found (404),
+     * otherwise a decoded JSON data block.
      *
+     * @param int $userId
+     * @return mixed
      */
     public function getUser($userId)
     {
@@ -139,8 +216,10 @@ class StudentViewService
     }
 
     /**
-     * Retrieve a user record based off of username
+     * Retrieve a user record based off of username.
      *
+     * @param string $userName
+     * @return mixed
      */
     public function getUserByName($userName)
     {
@@ -149,9 +228,11 @@ class StudentViewService
     }
 
     /**
-     * retrieve a user, enrollment, or other record
-     * return false if we get a 404
+     * Make a pre-constructed request to the API service.  Return false if the
+     * record is not found (i.e. on 404 HTTP error).
      *
+     * @param mixed $request
+     * @return mixed
      */
     private function getRecord($request)
     {
@@ -164,20 +245,26 @@ class StudentViewService
         }
     }
 
-
     /**
-     * Does this record exist
+     * Check the status code for a response to determine if the record exists.
      *
+     * @param ResponseInterface $response
+     * @return bool
+     * @todo move to api service class.
      */
     private function recordExists($response)
     {
         $exists = ($response->getStatusCode() == '404') ? false : true;
         return $exists;
     }
+
     /**
-     * Construct a new user data payload
+     * Construct a new user data payload data block. Fail if the id for the
+     * requesting account can't be found.
      * https://docs.valence.desire2learn.com/res/user.html#User.CreateUserData
      *
+     * @return mixed
+     * @todo move email domain to a configurable in .env
      */
     public function buildUserData()
     {
@@ -205,10 +292,12 @@ class StudentViewService
     }
 
     /**
-   * Construct a new enrollment data payload
-   *
-   */
-  public function buildEnrollmentData() {
+     * Construct a new enrollment data payload.
+     *
+     * @return mixed
+     */
+    public function buildEnrollmentData()
+    {
         if (!empty($this->studentViewUser['UserId'])) {
             $newEnrollmentData = array(
                 "OrgUnitId" => $this->orgUnitId,
@@ -221,12 +310,13 @@ class StudentViewService
             Log::warning('Attempting to build enrollment record without existing user?');
             return false;
         }
-  }
+    }
 
     /**
-     * Confirm if the end user/session user has access to the tool
-     * by pulling Enrollment.MyOrgUnitAccessInfo block using their own session
+     * Confirm if the end user/session user has access to the tool by pulling
+     * Enrollment.MyOrgUnitAccessInfo block using their own session.
      *
+     * @return bool
      */
     public function isAllowed()
     {
