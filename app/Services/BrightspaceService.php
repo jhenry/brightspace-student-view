@@ -1,12 +1,13 @@
 <?php
+
 /**
  * Brightspace Service: BrightspaceService request/service class
  * @package BrightspaceService
  * @author Justin Henry <justin.henry@uvm.edu>
  *
  */
+
 namespace App\Services;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Support integrations with D2L's Brightspace LMS.
@@ -45,6 +46,7 @@ class BrightspaceService
 
         $this->oauthClient = $this->getOauthClient();
     }
+
     /**
      * Instantiate an instance of the OAuth2 client library using configuration
      * from .env and config/services.php.
@@ -66,15 +68,16 @@ class BrightspaceService
 
         return $oauthClient;
     }
-/**
- * Prepare an authenticated request object.
- *
- * @param mixed $requestPath
- * @param mixed $accessToken
- * @param string $method
- * @param array $options
- * @return mixed $request
- */
+
+    /**
+     * Prepare an authenticated request object.
+     *
+     * @param mixed $requestPath
+     * @param mixed $accessToken
+     * @param string $method
+     * @param array $options
+     * @return mixed $request
+     */
     public function buildRequest($requestPath, $accessToken, $method = 'GET', array $options = [])
     {
         $path = $this->basePath . $requestPath;
@@ -101,16 +104,17 @@ class BrightspaceService
         $response = $httpClient->send($request, ['http_errors' => false]);
         return $response;
     }
-/**
- * Prepare, build, and send an authenticated request.
- *
- * @param mixed $path
- * @param mixed $accessToken
- * @param string $method
- * @param mixed $body
- * @return ResponseInterface $response
- */
-    public function doRequest($path, $accessToken, $method='GET', $body = NULL)
+
+    /**
+     * Prepare, build, and send an authenticated request.
+     *
+     * @param mixed $path
+     * @param mixed $accessToken
+     * @param string $method
+     * @param mixed $body
+     * @return ResponseInterface $response
+     */
+    public function doRequest($path, $accessToken, $method = 'GET', $body = NULL)
     {
         $options = array();
         if (!empty($body)) {
@@ -120,12 +124,13 @@ class BrightspaceService
         $response = $this->sendRequest($request);
         return $response;
     }
-/**
- * Confirm which user is authenticated with the provided token.
- *
- * @param mixed $accessToken
- * @return mixed $userArray
- */
+
+    /**
+     * Confirm which user is authenticated with the provided token.
+     *
+     * @param mixed $accessToken
+     * @return mixed $userArray
+     */
     public function whoAmI($accessToken)
     {
         $response = $this->doRequest('/users/whoami', $accessToken);
