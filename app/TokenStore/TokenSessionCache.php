@@ -1,11 +1,31 @@
 <?php
 
+/**
+ * Token Session Cache Storage: TokenSessionCache token management class
+ * @package TokenSessionCache
+ * @author Justin Henry <justin.henry@uvm.edu>
+ *
+ */
+
 namespace App\TokenStore;
 
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Session based token caching for OAuth API services
+ *
+ * This class handles OAuth2 token storage and caching. Tokens are stored and
+ * updated using application session storage during refresh and renewal.
+ *
+ */
 class TokenSessionCache
 {
+    /**
+     * Write tokens to session, along with the username and identifier.
+     *
+     * @param mixed $accessToken
+     * @param mixed $user
+     */
     public function storeTokens($accessToken, $user)
     {
 
@@ -18,6 +38,10 @@ class TokenSessionCache
         ]);
     }
 
+    /**
+     * Delete/destroy tokens stored in session, along with username and id.
+     *
+     */
     public function clearTokens()
     {
         session()->forget('accessToken');
@@ -27,6 +51,13 @@ class TokenSessionCache
         session()->forget('userIdentifier');
     }
 
+    /**
+     * Retrieve access tokens.  If there are none, return a blank string. If
+     * they are expired or about to expire, then initiate a refresh so we are
+     * not passing back stale tokens.
+     *
+     * @return string|mixed
+     */
     public function getAccessToken()
     {
         // Check if tokens exist
@@ -49,6 +80,14 @@ class TokenSessionCache
         return session('accessToken');
     }
 
+    /**
+     * Retrieve a new access token from the API service by making a request that
+     * includes the currently cached refresh token. Returns string containing
+     * the token to be cached, or an empty string if refresh failed.
+     *
+     * @return string
+     * @todo move to shared abstraction.
+     */
     public function refreshAccessToken()
     {
         // Initialize the OAuth client
@@ -71,6 +110,11 @@ class TokenSessionCache
         }
     }
 
+    /**
+     * Write fresh tokens to cache.
+     *
+     * @param mixed $accessToken
+     */
     public function updateTokens($accessToken)
     {
         session([
@@ -80,6 +124,12 @@ class TokenSessionCache
         ]);
     }
 
+    /**
+     * Initiate a new OAuth client.
+     *
+     * @return GenericProvider Generic OAuth2 client provider instance.
+     * @todo move to shared abstraction.
+     */
     public function getOauthClient()
     {
         $oauthClient = new \League\OAuth2\Client\Provider\GenericProvider([

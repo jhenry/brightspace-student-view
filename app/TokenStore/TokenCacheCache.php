@@ -104,6 +104,7 @@ class TokenCacheCache
      * the token to be cached, or an empty string if refresh failed.
      *
      * @return string
+     * @todo move to shared abstraction.
      */
     public function refreshAccessToken()
     {
@@ -133,6 +134,7 @@ class TokenCacheCache
      * Initiate a new OAuth client.
      *
      * @return GenericProvider Generic OAuth2 client provider instance.
+     * @todo move to shared abstraction.
      */
     public function getOauthClient()
     {
