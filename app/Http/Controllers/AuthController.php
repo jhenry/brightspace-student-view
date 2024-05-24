@@ -1,4 +1,12 @@
 <?php
+/**
+ * Authentication Controller: AuthController handle auth requests and initiate
+ * token retrievals.
+ *
+ * @package AuthController
+ * @author Justin Henry <justin.henry@uvm.edu>
+ *
+ */
 
 namespace App\Http\Controllers;
 
@@ -10,20 +18,43 @@ use Browser;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+/**
+ * Facilitate authentication with Brightspace services via OAuth2.
+ *
+ * Implements high level support for OAuth 2.0 protocol and Authorization Code
+ * Grant workflows, using the Brightspace authorization and token endpoints.
+ *
+ */
 class AuthController extends Controller
 {
+    /**
+     * Brightspace service class.
+     *
+     * @var BrightspaceService
+     */
     private $brightspace;
 
+    /**
+     * Instantiate the Brightspace service class.
+     *
+     * @param BrightspaceService $brightspaceService
+     */
     public function __construct(BrightspaceService $brightspaceService)
     {
         $this->brightspace = $brightspaceService;
     }
+    /**
+     * Initialize auth workflows following a sign in request.
+     *
+     * @param Request $request
+     * @return Redirector
+     */
     public function signin(Request $request)
     {
         // Client check to allow re-launching in new window in Safari/FF
-	// This gets around lack of same-site=lax defaults in those browsers
-        if(Browser::isSafari() || Browser::isFirefox()) {
-            if(empty($request->popout)) {
+        // This gets around lack of same-site=lax defaults in those browsers
+        if (Browser::isSafari() || Browser::isFirefox()) {
+            if (empty($request->popout)) {
                 return redirect('/popout?ou=' . $request->ou);
             }
         }
@@ -36,13 +67,19 @@ class AuthController extends Controller
         // Save client state so we can validate in callback
         session(['oauthState' => $oauthClient->getState()]);
 
-        if( !empty($request->ou) ) {
+        if (!empty($request->ou)) {
             session(['orgUnitId' => $request->ou]);
         }
 
         // Redirect to AAD signin page
         return redirect()->away($authUrl);
     }
+
+    /**
+     * Process signout request by destroying tokens.
+     *
+     * @return Redirector
+     */
     public function signout()
     {
         $tokenCache = new TokenSessionCache();
@@ -50,6 +87,16 @@ class AuthController extends Controller
         return redirect('/');
     }
 
+    /**
+     * Process callback request from api service.  Validates state before
+     * checking the authorization code and requesting a token.  Tokens are
+     * stored according to the type of user making the request (i.e. api service
+     * account vs end user).
+     *
+     * @param Request $request
+     * @return Redirector
+     * @todo Refactor token storage block out to it's own method.
+     */
     public function callback(Request $request)
     {
 
@@ -72,9 +119,9 @@ class AuthController extends Controller
                 $apiUserName = config('services.lms.api_service_user');
 
                 // If the authenticated user matches the api services account
-                // specified in application configs, then we want to use the
-                // Cache to store the tokens so that the application can make
-                // calls as needed for that user.
+                // specified in application configs, then we want to use a more
+                // persistant Cache to store the tokens so that the application
+                // can make calls as needed for that user.
                 if ($userName == $apiUserName) {
                     $tokenCache = new TokenCacheCache();
                 } else {
@@ -100,6 +147,12 @@ class AuthController extends Controller
             ->with('errorDetail', $request->query('error_description'));
     }
 
+    /**
+     * Provide state validation.
+     *
+     * @param Request $request
+     * @return Redirector
+     */
     private function validateState($request)
     {
         // Validate state
