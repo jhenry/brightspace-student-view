@@ -39,7 +39,7 @@ Register a new OAuth 2.0 application in the LMS, with the following set:
 
 ### Application Installation
 
-This is a Laravel application, so you will need an environment with an up to date version of PHP.  Once you have that, the basic steps look like this:
+This is a Laravel application, so you will need an environment with a [supported](https://www.php.net/supported-versions.php) version of PHP.  Once you have that, the basic steps look like this:
  
 1. Download/unpack this repository into it's new home
 3. For a production install, run `composer install --optimize-autoloader --no-dev` 
@@ -61,7 +61,7 @@ Finally, LMS_SVA_ROLE_ID will be the D2LID of the role you created above for the
 
 ### Initialize API Services Token
 
-NOTE: Never initialize this service using an administrator account in a production environment!  As noted above, you'll need to create a separate account and role. That role will need different permissions than the end user who is interacting with the application— but you should configure this services role to only access specific tasks in the LMS. 
+NOTE: Take care during this step to avoid initializing this service using an administrator account in a production environment.  As noted above, you'll need to create a separate account and role, which you will need to authenticate with during this step. That role will need different permissions than the end user who is interacting with the application— but you should configure this services role to only access specific tasks in the LMS. 
 
 An initial authentication via oAuth is needed for the application to send API calls as a specific service role.  To do this we first need to authenticate with that API services account so the access token can be stored.  
 
