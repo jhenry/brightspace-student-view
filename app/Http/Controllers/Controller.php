@@ -14,17 +14,16 @@ class Controller extends BaseController
     {
         $viewData = [];
 
-        // Check for flash errors
+        // Check for flash errors and add to view if present
         if (session('error')) {
             $viewData['error'] = session('error');
             $viewData['errorDetail'] = session('errorDetail');
         }
 
-        // Check for logged on user
+        // Check for logged on user and set some convenience view vars
         if (session('userName')) {
             $viewData['userName'] = session('userName');
             $viewData['userIdentifier'] = session('userIdentifier');
-            //$viewData['tokenExpires'] = session('tokenExpires');
         }
 
         return $viewData;
